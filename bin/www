@@ -1,0 +1,14 @@
+if (typeof process.env.NODE_ENV == 'undefined') {
+	process.env.NODE_ENV = 'local';
+}
+
+var debug   = require('debug')('rhubarb');
+var app     = require('../app');
+var server  = require('http').Server(app);
+var io      = require('socket.io')(server);
+
+app.set('port', process.env.PORT || 666);
+
+var server = server.listen(app.get('port'), function() {
+  debug('Express server listening on port ' + server.address().port);
+});
