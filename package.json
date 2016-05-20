@@ -6,30 +6,24 @@
     "start": "node ./bin/www"
   },
   "dependencies": {
-    "body-parser": "*",
-    "compression": "*",
-    "cookie-parser": "*",
-    "debug": "*",
-    "express": "*",
-    "express-handlebars": "*",
-    "express-session": "*",
-    "lodash": "*",
-    "mongodb": "*",
-    "mongoose": "*",
-    "morgan": "*",
-    "nodemailer": "*",
-    "nodemailer-mandrill-transport": "*",
-    "passport": "*",
-    "passport-local": "*",
-    "passport-local-mongoose": "*",
-    "serve-favicon": "*",
-    "socket.io": "*"
+    "bcrypt-nodejs": "latest",
+    "body-parser": "latest",
+    "compression": "latest",
+    "connect-flash": "latest",
+    "cookie-parser": "latest",
+    "express": "latest",
+    "express-handlebars": "latest",
+    "express-session": "^1.13.0",
+    "mongodb": "latest",
+    "mongoose": "latest",
+    "morgan": "latest",
+    "nodemailer": "latest",
+    "passport": "latest",
+    "passport-local": "latest",
+    "serve-favicon": "latest",
+    "socket.io": "latest"
   },
   "engines": {
-    "node": "*"
-  },
-  "devDependencies": {
-    "chai": "*",
-    "mocha": "*"
+    "node": "latest"
   }
 }

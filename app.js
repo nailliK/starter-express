@@ -1,19 +1,28 @@
 /////     REQUIRED PACKAGES     /////
+
 var express = require('express'),
 	app = express(),
 	path = require('path'),
 	favicon = require('serve-favicon'),
-	logger = require('morgan'),
 	cookieParser = require('cookie-parser'),
 	bodyParser = require('body-parser'),
 	compression = require('compression'),
 	mongoose = require('mongoose'),
+	morgan = require('morgan'),
+	passport = require('passport'),
 	server = require('http').Server(app),
 	exphbs  = require('express-handlebars'),
 	passport = require('passport'),
+	session = require('express-session'),
+	flash = require('connect-flash'),
 	io = require('./helpers/socket')(server);
 
+
+
+
+
 /////     SERVER AND DATABASE     /////
+
 var mongo_url = '';
 var options = {
 	server: {},
@@ -39,8 +48,9 @@ mongoose.connect(mongo_url, options, function (err) {
 	}
 });
 
-// start server
-server.listen(80);
+
+
+
 
 /////     EXPRESS SETTINGS     /////
 
@@ -56,27 +66,39 @@ app.set('view engine', '.hbs');
 app.use(compression({
 	level : 9
 }));
+app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(session({ secret: 'SpireDigital' }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(passport.initialize());
-app.use(passport.session());
+
+
+
+
 
 /////	AUTHENTICATION	  /////
-// passport and passport local mongoose config
-var User = require('./models/user');
-passport.use(User.createStrategy());
 
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
+require('./config/passport')(passport);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(flash());
+
+
+
 
 
 /////     ROUTES     /////
+
 var router = require('./routes/_router');
 app.use(router);
 
+
+
+
+
 /////     ERROR HANDLING     /////
+
 app.use(function(req, res, next) {
 	var err = new Error('Not Found');
 	err.status = 404;
@@ -86,5 +108,9 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
 	res.status(err.status || 500).json(err);
 });
+
+
+// start server
+server.listen(80);
 
 module.exports = app;

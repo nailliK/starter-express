@@ -2,18 +2,24 @@
 
 var express = require('express'),
 	router = express.Router(),
-	error_formatter = require('../../helpers/error_formatter')(),
-	bad_request_helper = require('../../helpers/bad_request_helper'),
 	passport = require('passport'),
-	User = require('../../models/user'),
-	Mailer = require('../../helpers/mailer');
+	User = require('../../models/user');
+
+require('./../../config/passport')(passport);
+
+	
+
+
+
+
 /////	  ROUTES	 /////
 
-router.get('/',function (req, res, next) {
+router.get('/',function (req, res, next) { // this should be protected, but I'm going to leave it for testing
 	'use strict';
+
 	User.find(function (err, users) {
 		if (err) {
-			return next(error_formatter.cleanErrors(err));
+			return next(err);
 		}
 		res.json(users);
 	});
@@ -21,100 +27,63 @@ router.get('/',function (req, res, next) {
 
 router.get('/:id', function (req, res, next) {
 	'use strict';
-	User.findById(req.params.id, function (err, user) {
-		if (err) {
-			return next(error_formatter.cleanErrors(err));
-		}
-		if (!user) {
-			return next(error_formatter.resourceNotFound('user'));
-		}
 
-		res.json(user);
-	});
+	console.log(req.user, req.isAuthenticated());
+	
+	if (req.isAuthenticated()) {
+		console.log(req.params.id);
+
+		User.findById(req.params.id, function (err, user) {
+			if (err) {
+				return next(err);
+			}
+			if (!user) {
+				res.status(404).end();
+			}
+
+			res.json(user);
+		});
+	} else {
+		req.status(401).end();
+	}
 });
 
 router.put('/:id', function (req, res, next) {
-	'use strict';
 
-	//only user and admin can edit account
-	if ((req.user._id != req.params._id) && !req.user.admin) {
-		return next(error_formatter.unauthorizedResource('user'));
+	if (req.isAuthenticated()) {
+		User.findByIdAndUpdate(req.params.id, {$set: {foo: 'bar'}}, function (err, user) {
+			if (err) {
+				return next(err);
+			}
+
+			if (!user) {
+				res.status(404).end();
+			}
+
+			res.send(user);
+		});
+	} else {
+		req.status(401).end();
 	}
-
-	var changeableAttributes = {};
-
-	//only allow these properties to change
-	if(req.body.phone) {
-		changeableAttributes.phone = req.body.phone;
-	}
-	if(req.body.facebook) {
-		changeableAttributes.facebook = req.body.facebook;
-	}
-
-	User.findByIdAndUpdate(req.params.id, changeableAttributes, {
-		//return modified document and run validators
-        new: true,
-        runValidators: true
-    }, function (err, user) {
-        if (err) {
-            return next(error_formatter.cleanErrors(err));
-        }
-        if (!user) {
-            return next(error_formatter.resourceNotFound('user'));
-        }
-
-        User.findById(user._id, function (err, user) {
-            if (err) {
-                return next(error_formatter.cleanErrors(err));
-            }
-            if (!user) {
-                return next(error_formatter.resourceNotFound('user'));
-            }
-			user.save(function (err) {
-				if (err) {
-					return next(err);
-				}
-
-				res.json({
-					data: user,
-					status: 200
-				});
-			});
-        });
-
-    });
 });
 
 router.delete('/:id', function (req, res, next) {
 	'use strict';
-	User.findOneAndRemove({_id: req.params.id}, function (err, user) {
-		if (err) {
-			return next(error_formatter.cleanErrors(err));
-		}
-		if (!user) {
-			return next(error_formatter.resourceNotFound('user'));
-		}
 
-		res.json({
-			data: user,
-			status: 200
+	if (req.isAuthenticated()) {
+		User.findByIdAndRemove(req.params.id, function (err, user) {
+			if (err) {
+				return next(err);
+			}
+			if (!user) {
+				res.status(404).end();
+			}
+
+			res.json(user);
 		});
-	});
-});
-
-
-/////	  ERRORS	 /////
-router.all('*', function (req, res, next) {
-	'use strict';
-	// this regex matches '/:id'
-	var routeRegex = /^\/confirm\/[a-z0-9]+$/i;
-
-	if (routeRegex.test(req.path)) {
-		return next({status: 405, errors: { "method": req.method + " not allowed. PUT is allowed."}});
+	} else {
+		res.status(401).end();
 	}
-
-	bad_request_helper(req, res, next);
-
 });
 
 module.exports = router;

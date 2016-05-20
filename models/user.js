@@ -1,39 +1,21 @@
-var mongoose = require('mongoose'),
-	passportLocalMongoose = require('passport-local-mongoose'),
+var bcrypt   = require('bcrypt-nodejs'),
+	mongoose = require('mongoose'),
 	Schema = mongoose.Schema;
 
 var User_Schema = new Schema({
-	admin: {
-		type: Boolean,
-		default: false
-	},
-	confirmed: {
-		type: Boolean,
-		default: false
-	},
-	phone: {
-		type: String,
-		required: 'Phone Number is required'
-	},
-	facebook: {
-		type: String
-	},
-	email : {
-		type : String,
-		required : "A valid email is required",
-		match : [/^([\w\.]+(\+\d+)?@([\w]+\.)+[\w]{2,4})?$/, "A valid email is required"],
-		index: { unique: true }
-	}
+	email: String,
+	password: String,
+	admin: Boolean
 });
 
-// Passport-local-mongoose config
-User_Schema.plugin(passportLocalMongoose, {
-	usernameField: 'email',
-	usernameQuery: 'email',
-    userExistsError: '%s'
-});
 
-User_Schema.paths.salt.selected = true;
+User_Schema.methods.generateHash = function(password) {
+	return bcrypt.hashSync(password, bcrypt.genSaltSync(8), null);
+};
+
+User_Schema.methods.validPassword = function(password) {
+	return bcrypt.compareSync(password, this.password);
+};
 
 var User = mongoose.model('User', User_Schema);
 
