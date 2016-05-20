@@ -25,10 +25,21 @@ router.get('/',function (req, res, next) { // this should be protected, but I'm 
 	});
 });
 
+router.post('/', function(req, res, next) {
+	passport.authenticate('local-signup', function(err, user) {
+		if (err) {
+			return next(err);
+		} else if(!user) {
+			res.status(409).end();
+		} else {
+			res.json(user);
+		}
+	})(req, res, next);
+});
+
+
 router.get('/:id', function (req, res, next) {
 	'use strict';
-
-	console.log(req.user, req.isAuthenticated());
 	
 	if (req.isAuthenticated()) {
 		console.log(req.params.id);
@@ -49,6 +60,7 @@ router.get('/:id', function (req, res, next) {
 });
 
 router.put('/:id', function (req, res, next) {
+	"use strict";
 
 	if (req.isAuthenticated()) {
 		User.findByIdAndUpdate(req.params.id, {$set: {foo: 'bar'}}, function (err, user) {
