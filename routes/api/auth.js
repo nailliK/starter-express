@@ -23,7 +23,14 @@ router.post('/login', function(req, res, next) {
 		} else if (!user) {
 			res.status(401).end();
 		} else {
-			res.json(user);
+			req.login(user, function (err) {
+				if (err) {
+					return next(err);
+				}
+
+				res.json(user);
+			});
+
 		}
 	})(req, res, next);
 });
