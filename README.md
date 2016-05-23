@@ -8,4 +8,4 @@
 	mkdir data && mkdir data/db && mkdir log #create data/db and log directories for MongoDB
 	chmod 777 log -R && chmod 777 data -R #make directories writeable for MongoDB
 	mongod --fork --logpath ./log/mongodb.log --dbpath data/db --smallfiles #start MongoDB as a Daemon
-	sudo forever start bin/www #start Node application as a Daemon
+	sudo nodemon bin/www #start Node application as a Daemon

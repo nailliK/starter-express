@@ -9,7 +9,6 @@
     "bcrypt-nodejs": "latest",
     "body-parser": "latest",
     "compression": "latest",
-    "connect-flash": "latest",
     "cookie-parser": "latest",
     "debug": "^2.2.0",
     "express": "latest",

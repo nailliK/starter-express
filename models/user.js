@@ -5,7 +5,8 @@ var bcrypt   = require('bcrypt-nodejs'),
 var User_Schema = new Schema({
 	email: String,
 	password: String,
-	admin: Boolean
+	admin: Boolean,
+	role: { type: Schema.Types.ObjectId, ref: 'Role' }
 });
 
 

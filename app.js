@@ -7,46 +7,29 @@ var express = require('express'),
 	cookieParser = require('cookie-parser'),
 	bodyParser = require('body-parser'),
 	compression = require('compression'),
-	mongoose = require('mongoose'),
 	morgan = require('morgan'),
 	passport = require('passport'),
 	server = require('http').Server(app),
 	exphbs  = require('express-handlebars'),
 	passport = require('passport'),
-	session = require('express-session'),
-	flash = require('connect-flash'),
-	io = require('./helpers/socket')(server);
+	session = require('express-session');
 
 
 
 
 
-/////     SERVER AND DATABASE     /////
+/////     DATABASE     /////
 
-var mongo_url = '';
-var options = {
-	server: {},
-	replset: {}
-};
+require('./config/database')();
+// require('./migrations/seeder')(); // uncomment for seeding
 
-options.server.socketOptions = options.replset.socketOptions = { keepAlive: 1 };
 
-console.log('the env is: ', process.env.NODE_ENV);
 
-switch (process.env.NODE_ENV) {
-case 'local':
-case 'test':
-    mongo_url = 'mongodb://localhost/node-project-starter';
-}
 
-mongoose.connect(mongo_url, options, function (err) {
-	'use strict';
-	if (err) {
-		console.log('connection error', err);
-	} else {
-		console.log('connection successful');
-	}
-});
+
+/////     WEBSOCKET     /////
+
+// var io = require('./helpers/socket')(server); // uncomment for websocket
 
 
 
@@ -54,28 +37,38 @@ mongoose.connect(mongo_url, options, function (err) {
 
 /////     EXPRESS SETTINGS     /////
 
-// set up handlebars
+// enable view engine (handlebars)
 app.engine('.hbs', exphbs({
 	defaultLayout: 'main',
 	extname: '.hbs'
 }));
 app.set('view engine', '.hbs');
 
-// app.use(favicon(__dirname + '/public/favicon.ico'));
-
+// enable compression
 app.use(compression({
 	level : 9
 }));
+
+// logging
 app.use(morgan('dev'));
+
+// request body parsing
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+
+// cookies and session
 app.use(cookieParser());
 app.use(session({
 	secret: 'SpireDigital',
 	resave: true,
 	saveUninitialized: true
 }));
+
+// set static (public) directory
 app.use(express.static(path.join(__dirname, 'public')));
+
+// favicon
+// app.use(favicon(__dirname + '/public/favicon.ico'));
 
 
 
@@ -86,7 +79,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 require('./config/passport')(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(flash());
 
 
 
